@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -7,14 +8,15 @@ public class GameBoard : MonoBehaviour
 {
     [SerializeField] private Tilemap currentState;
     [SerializeField] private Tile aliveTile;
-    [SerializeField] private float updateInterval = 0.05f;
+    [SerializeField] private TextMeshProUGUI populationText;
+    [SerializeField] private TextMeshProUGUI iterationsText;
 
     private readonly HashSet<Vector3Int> aliveCells = new();
     private readonly HashSet<Vector3Int> cellsToCheck = new();
 
-    public int population { get; private set; }
-    public int iterations { get; private set; }
-    public float time { get; private set; }
+    private float updateInterval = 0.05f;
+    private int population = 0;
+    private int iterations = 0;
 
     public void AnalyzeTilemapAndStart()
     {
@@ -34,23 +36,13 @@ public class GameBoard : MonoBehaviour
         StartCoroutine(Simulate());
     }
 
-    public void StopSimulation()
-    {
-        StopAllCoroutines();
-    }
-
-    public void UpdateInterval(float value)
-    {
-        updateInterval = value;
-    }
-
     private void Clear()
     {
         aliveCells.Clear();
         cellsToCheck.Clear();
         population = 0;
         iterations = 0;
-        time = 0f;
+        UpdateText();
     }
 
     private IEnumerator Simulate()
@@ -61,7 +53,8 @@ public class GameBoard : MonoBehaviour
 
             population = aliveCells.Count;
             iterations++;
-            time += updateInterval;
+
+            UpdateText();
 
             yield return new WaitForSeconds(updateInterval);
         }
@@ -132,4 +125,13 @@ public class GameBoard : MonoBehaviour
 
     private bool IsAlive(Vector3Int cell) => currentState.GetTile(cell) == aliveTile;
 
+    public void StopSimulation() => StopAllCoroutines();
+
+    public void UpdateInterval(float value) => updateInterval = value;
+
+    private void UpdateText()
+    {
+        populationText.text = "Population: " + population.ToString();
+        iterationsText.text = "Iterations: " + iterations.ToString();
+    }
 }
